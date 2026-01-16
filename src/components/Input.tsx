@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInput, Text, View } from 'react-native';
+import { TextInput, Text, View, StyleSheet } from 'react-native';
 
 interface InputProps {
   label: string;
@@ -21,19 +21,44 @@ export const Input: React.FC<InputProps> = ({
   error,
 }) => {
   return (
-    <View className="mb-4">
-      <Text className="text-gray-700 font-medium mb-2">{label}</Text>
+    <View style={styles.container}>
+      <Text style={styles.label}>{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
-        className={`border rounded-lg px-4 py-3 ${
-          error ? 'border-red-500' : 'border-gray-300'
-        }`}
+        style={[styles.input, error && styles.inputError]}
       />
-      {error && <Text className="text-red-500 text-sm mt-1">{error}</Text>}
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
+  label: {
+    color: '#374151',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  inputError: {
+    borderColor: '#ef4444',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    marginTop: 4,
+  },
+});

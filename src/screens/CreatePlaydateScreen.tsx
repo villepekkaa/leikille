@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, ScrollView, Alert, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { TabParamList, Location } from '../types';
@@ -121,9 +121,9 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="px-6 py-6">
-        <Text className="text-2xl font-bold text-gray-900 mb-6">
+    <ScrollView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>
           Luo uusi leikkitreffi
         </Text>
 
@@ -141,13 +141,13 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
           placeholder="Kerro lisää leikistä..."
         />
 
-        <View className="mb-4">
-          <Text className="text-gray-700 font-medium mb-2">Päivämäärä *</Text>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Päivämäärä *</Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
-            className="border border-gray-300 rounded-lg px-4 py-3"
+            style={styles.dateButton}
           >
-            <Text className="text-gray-900">
+            <Text style={styles.dateButtonText}>
               {date.toLocaleDateString('fi-FI', {
                 weekday: 'long',
                 day: 'numeric',
@@ -167,8 +167,8 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
           )}
         </View>
 
-        <View className="flex-row mb-4 space-x-4">
-          <View className="flex-1">
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
             <Input
               label="Alkaa *"
               value={startTime}
@@ -176,7 +176,7 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
               placeholder="14:00"
             />
           </View>
-          <View className="flex-1">
+          <View style={styles.halfWidth}>
             <Input
               label="Päättyy *"
               value={endTime}
@@ -186,8 +186,8 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        <View className="flex-row mb-4 space-x-4">
-          <View className="flex-1">
+        <View style={styles.row}>
+          <View style={styles.halfWidth}>
             <Input
               label="Ikä min"
               value={minAge}
@@ -196,7 +196,7 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
               keyboardType="numeric"
             />
           </View>
-          <View className="flex-1">
+          <View style={styles.halfWidth}>
             <Input
               label="Ikä max"
               value={maxAge}
@@ -215,7 +215,7 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
           keyboardType="numeric"
         />
 
-        <Text className="text-xl font-semibold text-gray-900 mb-4 mt-6">
+        <Text style={styles.sectionTitle}>
           Sijainti
         </Text>
 
@@ -233,12 +233,12 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
           placeholder="esim. Mannerheimintie 12, Helsinki"
         />
 
-        <Text className="text-gray-700 font-medium mb-2">
+        <Text style={styles.mapLabel}>
           Valitse sijainti kartalta
         </Text>
-        <View className="h-64 rounded-lg overflow-hidden border border-gray-300 mb-6">
+        <View style={styles.mapContainer}>
           <MapView
-            style={{ flex: 1 }}
+            style={styles.map}
             region={region}
             onRegionChangeComplete={setRegion}
             onPress={handleMapPress}
@@ -256,5 +256,71 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 24,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    color: '#374151',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  dateButtonText: {
+    color: '#111827',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 16,
+  },
+  halfWidth: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 16,
+    marginTop: 24,
+  },
+  mapLabel: {
+    color: '#374151',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  mapContainer: {
+    height: 256,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    marginBottom: 24,
+  },
+  map: {
+    flex: 1,
+  },
+});
 
 export default CreatePlaydateScreen;

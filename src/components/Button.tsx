@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native';
 
 interface ButtonProps {
   title: string;
@@ -16,38 +16,80 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   disabled = false,
 }) => {
-  const getVariantStyles = () => {
+  const getButtonStyle = () => {
+    const baseStyles: any[] = [styles.button];
+    
     switch (variant) {
       case 'primary':
-        return 'bg-primary-600 active:bg-primary-700';
+        baseStyles.push(styles.primaryButton);
+        break;
       case 'secondary':
-        return 'bg-secondary-600 active:bg-secondary-700';
+        baseStyles.push(styles.secondaryButton);
+        break;
       case 'outline':
-        return 'bg-transparent border-2 border-primary-600 active:bg-primary-50';
-      default:
-        return 'bg-primary-600';
+        baseStyles.push(styles.outlineButton);
+        break;
     }
+    
+    if (disabled) {
+      baseStyles.push(styles.disabled);
+    }
+    
+    return baseStyles;
   };
 
-  const getTextStyles = () => {
-    return variant === 'outline' ? 'text-primary-600' : 'text-white';
+  const getTextStyle = () => {
+    return variant === 'outline' ? styles.outlineText : styles.buttonText;
   };
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || loading}
-      className={`py-4 px-6 rounded-lg ${getVariantStyles()} ${
-        disabled ? 'opacity-50' : ''
-      }`}
+      style={getButtonStyle()}
     >
       {loading ? (
         <ActivityIndicator color={variant === 'outline' ? '#dc2626' : '#fff'} />
       ) : (
-        <Text className={`text-center font-semibold text-base ${getTextStyles()}`}>
+        <Text style={[styles.text, getTextStyle()]}>
           {title}
         </Text>
       )}
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  button: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#dc2626',
+  },
+  secondaryButton: {
+    backgroundColor: '#16a34a',
+  },
+  outlineButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#dc2626',
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+  },
+  outlineText: {
+    color: '#dc2626',
+  },
+});

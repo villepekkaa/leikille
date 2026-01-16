@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TabParamList, User, Child } from '../types';
 import { Input } from '../components/Input';
@@ -138,22 +138,22 @@ const ProfileScreen: React.FC<Props> = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-gray-600">Ladataan...</Text>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Ladataan...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="bg-primary-600 px-6 pt-12 pb-20">
-        <Text className="text-3xl font-bold text-white mb-2">Profiili</Text>
-        <Text className="text-primary-100">{user?.email}</Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Profiili</Text>
+        <Text style={styles.headerEmail}>{user?.email}</Text>
       </View>
 
-      <View className="px-6 -mt-12">
-        <View className="bg-white rounded-lg p-6 shadow-sm mb-6">
-          <Text className="text-xl font-semibold text-gray-900 mb-4">
+      <View style={styles.content}>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
             Perustiedot
           </Text>
 
@@ -179,23 +179,23 @@ const ProfileScreen: React.FC<Props> = () => {
           />
         </View>
 
-        <View className="bg-white rounded-lg p-6 shadow-sm mb-6">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-xl font-semibold text-gray-900">
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>
               Lapset ({children.length})
             </Text>
             <TouchableOpacity
               onPress={() => setShowAddChild(!showAddChild)}
-              className="bg-secondary-600 px-4 py-2 rounded-lg"
+              style={styles.addButton}
             >
-              <Text className="text-white font-semibold">
+              <Text style={styles.addButtonText}>
                 {showAddChild ? 'Peruuta' : '+ Lisää lapsi'}
               </Text>
             </TouchableOpacity>
           </View>
 
           {showAddChild && (
-            <View className="bg-gray-50 p-4 rounded-lg mb-4">
+            <View style={styles.addChildForm}>
               <Input
                 label="Lapsen nimi"
                 value={childName}
@@ -218,37 +218,37 @@ const ProfileScreen: React.FC<Props> = () => {
           )}
 
           {children.length === 0 ? (
-            <View className="py-8 items-center">
-              <Text className="text-5xl mb-2">👶</Text>
-              <Text className="text-gray-600">Ei lisättyjä lapsia</Text>
+            <View style={styles.emptyChildren}>
+              <Text style={styles.emptyIcon}>👶</Text>
+              <Text style={styles.emptyText}>Ei lisättyjä lapsia</Text>
             </View>
           ) : (
             children.map((child, index) => (
               <View
                 key={index}
-                className="flex-row items-center justify-between bg-gray-50 rounded-lg p-4 mb-2"
+                style={styles.childCard}
               >
-                <View className="flex-1">
-                  <Text className="font-semibold text-gray-900 text-lg">
+                <View style={styles.childInfo}>
+                  <Text style={styles.childName}>
                     {child.name}
                   </Text>
-                  <Text className="text-gray-600">
+                  <Text style={styles.childAge}>
                     {child.age} {child.age === 1 ? 'vuosi' : 'vuotta'}
                   </Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => handleRemoveChild(index)}
-                  className="bg-red-100 px-3 py-2 rounded-lg"
+                  style={styles.removeButton}
                 >
-                  <Text className="text-red-600 font-semibold">Poista</Text>
+                  <Text style={styles.removeButtonText}>Poista</Text>
                 </TouchableOpacity>
               </View>
             ))
           )}
         </View>
 
-        <View className="bg-white rounded-lg p-6 shadow-sm mb-6">
-          <Text className="text-xl font-semibold text-gray-900 mb-4">
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
             Asetukset
           </Text>
           
@@ -262,5 +262,120 @@ const ProfileScreen: React.FC<Props> = () => {
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    color: '#6b7280',
+  },
+  headerContainer: {
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 24,
+    paddingTop: 48,
+    paddingBottom: 80,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  headerEmail: {
+    color: '#fecaca',
+  },
+  content: {
+    paddingHorizontal: 24,
+    marginTop: -48,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 24,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  addButton: {
+    backgroundColor: '#16a34a',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  addChildForm: {
+    backgroundColor: '#f9fafb',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  emptyChildren: {
+    paddingVertical: 32,
+    alignItems: 'center',
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  emptyText: {
+    color: '#6b7280',
+  },
+  childCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 8,
+  },
+  childInfo: {
+    flex: 1,
+  },
+  childName: {
+    fontWeight: '600',
+    color: '#111827',
+    fontSize: 18,
+  },
+  childAge: {
+    color: '#6b7280',
+  },
+  removeButton: {
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  removeButtonText: {
+    color: '#dc2626',
+    fontWeight: '600',
+  },
+});
 
 export default ProfileScreen;

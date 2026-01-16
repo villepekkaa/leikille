@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, RefreshControl } from 'react-native';
+import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { Playdate } from '../types';
 import { PlaydateCard } from '../components/PlaydateCard';
 import { firestoreService } from '../services/firestore.service';
@@ -42,22 +42,22 @@ const HomeScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <Text className="text-gray-600">Ladataan...</Text>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Ladataan...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <View className="bg-white px-6 py-4 border-b border-gray-200">
-        <Text className="text-2xl font-bold text-gray-900">
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
           Tänään {new Date().toLocaleDateString('fi-FI', { 
             day: 'numeric', 
             month: 'long' 
           })}
         </Text>
-        <Text className="text-gray-600 mt-1">
+        <Text style={styles.headerSubtitle}>
           {playdates.length} leikkiä järjestetty
         </Text>
       </View>
@@ -71,17 +71,15 @@ const HomeScreen: React.FC = () => {
             onPress={() => handlePlaydatePress(item.id)}
           />
         )}
-        contentContainerClassName="px-6 py-4"
+        contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <View className="flex-1 justify-center items-center py-20">
-            <Text className="text-6xl mb-4">🎈</Text>
-            <Text className="text-xl font-semibold text-gray-900 mb-2">
-              Ei leikkejä tänään
-            </Text>
-            <Text className="text-gray-600 text-center">
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>🎈</Text>
+            <Text style={styles.emptyTitle}>Ei leikkejä tänään</Text>
+            <Text style={styles.emptySubtitle}>
               Vedä alas päivittääksesi tai luo uusi leikki
             </Text>
           </View>
@@ -90,6 +88,62 @@ const HomeScreen: React.FC = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+  },
+  loadingText: {
+    color: '#6b7280',
+  },
+  header: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  headerSubtitle: {
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  listContent: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 80,
+  },
+  emptyIcon: {
+    fontSize: 60,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+});
 
 export default HomeScreen;
 

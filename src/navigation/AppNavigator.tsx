@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../hooks/useAuth';
 import { RootStackParamList, AuthStackParamList, TabParamList } from '../types';
-import { ActivityIndicator, View, Text } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
 
 // Tuodaan screenejä
 import HomeScreen from '../screens/HomeScreen';
@@ -103,7 +103,7 @@ export const AppNavigator = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View style={styles.loading}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -115,3 +115,11 @@ export const AppNavigator = () => {
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

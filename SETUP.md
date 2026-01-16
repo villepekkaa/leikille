@@ -193,12 +193,7 @@ npm install
 - Tarkista, että `src/config/firebase.ts` on täytetty oikein
 - Varmista, että Authentication ja Firestore ovat aktivoitu Firebase Consolessa
 
-### NativeWind ei toimi
-
-Varmista, että `babel.config.js` sisältää:
-```javascript
-plugins: ['nativewind/babel']
-```
+### Cache-ongelmat
 
 Tyhjennä cache ja käynnistä uudelleen:
 ```bash
@@ -220,10 +215,10 @@ React Native Maps vaatii lisäkonfiguraatiota:
 
 Kun perusversio toimii, voit lisätä:
 
-1. **Leikkitreffi-luontinäkymä** - Mahdollisuus luoda uusia leikkejä
-2. **Profiilisivu** - Käyttäjätietojen hallinta
-3. **Push-notifikaatiot** - Firebase Cloud Messaging
-4. **Kuvien upload** - Firebase Storage
-5. **Chat** - Viestintä osallistujien välillä
+1. **AsyncStorage Firebase-autentikaatioon** - Kirjautumisen pysyvyys
+2. **Push-notifikaatiot** - Firebase Cloud Messaging
+3. **Kuvien upload** - Firebase Storage
+4. **Chat** - Viestintä osallistujien välillä
+5. **Suodatus ja haku** - Leikkitreffien etsintä
 
 Tarvitsetko apua jonkin ominaisuuden kanssa? Kysy vain! 🚀

@@ -9,7 +9,7 @@ React Native -sovellus, jossa lapsiperheet voivat sopia keskenään leikkitreffe
 - **Firebase Authentication** - Käyttäjien kirjautuminen
 - **Cloud Firestore** - NoSQL-tietokanta leikkitreffeille
 - **React Navigation** - Navigaatio
-- **NativeWind** (Tailwind CSS) - Tyylittely
+- **StyleSheet** - React Native tyylittely
 - **React Native Maps** - Karttanäkymät
 
 ## 📁 Projektin rakenne
@@ -80,18 +80,30 @@ src/
    - `a` - Android emulator
    - Skannaa QR-koodi Expo Go -sovelluksella (iOS/Android)
 
-## 🎨 Tailwind CSS (NativeWind)
+## 🎨 Tyylittely
 
-Sovellus käyttää NativeWindiä, joka tuo Tailwindin React Nativeen. Värit on määritelty keskitetysti `tailwind.config.js`-tiedostossa:
+Sovellus käyttää React Native StyleSheetiä. Värit on määritelty yhdenmukaisesti kaikkialla sovelluksessa:
 
-- **Primary** - Punaiset sävyt (toimintopainikkeet)
-- **Secondary** - Vihreät sävyt (onnistumisviestit)
-- **Accent** - Siniset sävyt (korosterus)
+- **Primary** (#dc2626) - Punainen (toimintopainikkeet)
+- **Secondary** (#16a34a) - Vihreä (onnistumisviestit)
+- **Accent** (#3b82f6) - Sininen (korostukset)
 
 Käyttö komponenteissa:
 ```tsx
-<View className="bg-primary-600 p-4 rounded-lg">
-  <Text className="text-white font-bold">Tervetuloa!</Text>
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#dc2626',
+    padding: 16,
+    borderRadius: 8,
+  },
+  title: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+});
+
+<View style={styles.container}>
+  <Text style={styles.title}>Tervetuloa!</Text>
 </View>
 ```
 
@@ -103,14 +115,16 @@ Käyttö komponenteissa:
 - ✅ Yksittäisen leikkin tarkastelu kartalla
 - ✅ Leikkiin liittyminen
 - ✅ Osallistujien näyttö
+- ✅ Uuden leikkin luominen
+- ✅ Profiilisivu
+- ✅ Bottom tab navigaatio
 
 ### Tulossa
-- 🔄 Uuden leikkin luominen
-- 🔄 Profiilisivu
 - 🔄 Push-notifikaatiot
 - 🔄 Chat-toiminto
 - 🔄 Kuvien lisäys
 - 🔄 Suodatus ja haku
+- 🔄 AsyncStorage Firebase-autentikaatioon
 
 ## 🗄️ Firestore-rakenne
 

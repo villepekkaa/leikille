@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker } from 'react-native-maps';
 import { RootStackParamList, Playdate } from '../types';
@@ -57,8 +57,8 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
 
   if (loading || !playdate) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-gray-600">Ladataan...</Text>
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Ladataan...</Text>
       </View>
     );
   }
@@ -72,9 +72,9 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
   const hasJoined = playdate.participants.some(p => p.userId === user?.uid);
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <MapView
-        className="w-full h-80"
+        style={styles.map}
         initialRegion={{
           latitude: playdate.location.coordinates.latitude,
           longitude: playdate.location.coordinates.longitude,
@@ -92,14 +92,14 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
         />
       </MapView>
 
-      <ScrollView className="flex-1">
-        <View className="px-6 py-6">
-          <View className="flex-row justify-between items-start mb-4">
-            <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900 mb-2">
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.title}>
                 {playdate.title}
               </Text>
-              <Text className="text-primary-600 font-medium">
+              <Text style={styles.dateText}>
                 {new Date(playdate.date).toLocaleDateString('fi-FI', {
                   weekday: 'long',
                   day: 'numeric',
@@ -107,87 +107,87 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
                 })}
               </Text>
             </View>
-            <View className="bg-primary-100 px-4 py-2 rounded-full">
-              <Text className="text-primary-700 font-semibold">
+            <View style={styles.timeBadge}>
+              <Text style={styles.timeText}>
                 {playdate.startTime} - {playdate.endTime}
               </Text>
             </View>
           </View>
 
-          <View className="bg-gray-50 rounded-lg p-4 mb-6">
-            <View className="flex-row items-center mb-2">
-              <Text className="text-2xl mr-2">📍</Text>
-              <View className="flex-1">
-                <Text className="font-semibold text-gray-900">
+          <View style={styles.locationCard}>
+            <View style={styles.locationRow}>
+              <Text style={styles.locationIcon}>📍</Text>
+              <View style={styles.locationInfo}>
+                <Text style={styles.locationName}>
                   {playdate.location.name}
                 </Text>
-                <Text className="text-gray-600 text-sm">
+                <Text style={styles.locationAddress}>
                   {playdate.location.address}
                 </Text>
               </View>
             </View>
           </View>
 
-          <View className="flex-row justify-around mb-6">
-            <View className="items-center">
-              <Text className="text-3xl mb-1">👨‍👩‍👧‍👦</Text>
-              <Text className="text-2xl font-bold text-gray-900">
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statIcon}>👨‍👩‍👧‍👦</Text>
+              <Text style={styles.statValue}>
                 {playdate.participants.length}
               </Text>
-              <Text className="text-gray-600 text-sm">perhettä</Text>
+              <Text style={styles.statLabel}>perhettä</Text>
             </View>
-            <View className="items-center">
-              <Text className="text-3xl mb-1">👶</Text>
-              <Text className="text-2xl font-bold text-gray-900">
+            <View style={styles.statItem}>
+              <Text style={styles.statIcon}>👶</Text>
+              <Text style={styles.statValue}>
                 {childrenCount}
               </Text>
-              <Text className="text-gray-600 text-sm">lasta</Text>
+              <Text style={styles.statLabel}>lasta</Text>
             </View>
-            <View className="items-center">
-              <Text className="text-3xl mb-1">🎂</Text>
-              <Text className="text-2xl font-bold text-gray-900">
+            <View style={styles.statItem}>
+              <Text style={styles.statIcon}>🎂</Text>
+              <Text style={styles.statValue}>
                 {playdate.ageRange.min}-{playdate.ageRange.max}
               </Text>
-              <Text className="text-gray-600 text-sm">vuotta</Text>
+              <Text style={styles.statLabel}>vuotta</Text>
             </View>
           </View>
 
           {playdate.description && (
-            <View className="mb-6">
-              <Text className="font-semibold text-gray-900 mb-2">
+            <View style={styles.descriptionSection}>
+              <Text style={styles.sectionTitle}>
                 Kuvaus
               </Text>
-              <Text className="text-gray-700 leading-6">
+              <Text style={styles.descriptionText}>
                 {playdate.description}
               </Text>
             </View>
           )}
 
-          <View className="mb-6">
-            <Text className="font-semibold text-gray-900 mb-3">
+          <View style={styles.participantsSection}>
+            <Text style={styles.sectionTitle}>
               Osallistujat ({playdate.participants.length})
             </Text>
             {playdate.participants.map((participant, index) => (
               <View
                 key={index}
-                className="flex-row items-center bg-gray-50 rounded-lg p-3 mb-2"
+                style={styles.participantCard}
               >
-                <View className="w-10 h-10 bg-primary-200 rounded-full justify-center items-center mr-3">
-                  <Text className="text-primary-700 font-semibold">
+                <View style={styles.participantAvatar}>
+                  <Text style={styles.participantInitial}>
                     {participant.user.name?.[0] || '?'}
                   </Text>
                 </View>
-                <View className="flex-1">
-                  <Text className="font-medium text-gray-900">
+                <View style={styles.participantInfo}>
+                  <Text style={styles.participantName}>
                     {participant.user.name || 'Käyttäjä'}
                   </Text>
-                  <Text className="text-gray-600 text-sm">
+                  <Text style={styles.participantChildren}>
                     {participant.childrenCount} {participant.childrenCount === 1 ? 'lapsi' : 'lasta'}
                   </Text>
                 </View>
                 {participant.userId === playdate.organizerId && (
-                  <View className="bg-accent-100 px-3 py-1 rounded-full">
-                    <Text className="text-accent-700 text-xs font-medium">
+                  <View style={styles.organizerBadge}>
+                    <Text style={styles.organizerText}>
                       Järjestäjä
                     </Text>
                   </View>
@@ -205,16 +205,16 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
           )}
 
           {hasJoined && !isOrganizer && (
-            <View className="bg-secondary-50 border border-secondary-200 rounded-lg p-4">
-              <Text className="text-secondary-700 font-medium text-center">
+            <View style={styles.joinedBadge}>
+              <Text style={styles.joinedText}>
                 ✓ Olet liittynyt tähän leikkiin
               </Text>
             </View>
           )}
 
           {isOrganizer && (
-            <View className="bg-accent-50 border border-accent-200 rounded-lg p-4">
-              <Text className="text-accent-700 font-medium text-center">
+            <View style={styles.organizerCard}>
+              <Text style={styles.organizerCardText}>
                 👑 Olet tämän leikkin järjestäjä
               </Text>
             </View>
@@ -224,5 +224,189 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#6b7280',
+  },
+  map: {
+    width: '100%',
+    height: 320,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  dateText: {
+    color: '#dc2626',
+    fontWeight: '500',
+  },
+  timeBadge: {
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 9999,
+  },
+  timeText: {
+    color: '#991b1b',
+    fontWeight: '600',
+  },
+  locationCard: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 24,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  locationIcon: {
+    fontSize: 24,
+    marginRight: 8,
+  },
+  locationInfo: {
+    flex: 1,
+  },
+  locationName: {
+    fontWeight: '600',
+    color: '#111827',
+  },
+  locationAddress: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 24,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statIcon: {
+    fontSize: 32,
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  statLabel: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  descriptionSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  descriptionText: {
+    color: '#374151',
+    lineHeight: 24,
+  },
+  participantsSection: {
+    marginBottom: 24,
+  },
+  participantCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  participantAvatar: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#fecaca',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  participantInitial: {
+    color: '#991b1b',
+    fontWeight: '600',
+  },
+  participantInfo: {
+    flex: 1,
+  },
+  participantName: {
+    fontWeight: '500',
+    color: '#111827',
+  },
+  participantChildren: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  organizerBadge: {
+    backgroundColor: '#dbeafe',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 9999,
+  },
+  organizerText: {
+    color: '#1e40af',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  joinedBadge: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    borderRadius: 8,
+    padding: 16,
+  },
+  joinedText: {
+    color: '#15803d',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  organizerCard: {
+    backgroundColor: '#dbeafe',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    borderRadius: 8,
+    padding: 16,
+  },
+  organizerCardText: {
+    color: '#1e40af',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+});
 
 export default PlaydateDetailScreen;

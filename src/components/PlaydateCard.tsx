@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Playdate } from '../types';
 
 interface PlaydateCardProps {
@@ -14,48 +14,98 @@ export const PlaydateCard: React.FC<PlaydateCardProps> = ({ playdate, onPress })
   );
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
-    >
-      <View className="flex-row justify-between items-start mb-2">
-        <Text className="text-lg font-semibold text-gray-900 flex-1">
-          {playdate.title}
-        </Text>
-        <View className="bg-primary-100 px-3 py-1 rounded-full">
-          <Text className="text-primary-700 text-xs font-medium">
+    <TouchableOpacity onPress={onPress} style={styles.card}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{playdate.title}</Text>
+        <View style={styles.timeBadge}>
+          <Text style={styles.timeText}>
             {playdate.startTime} - {playdate.endTime}
           </Text>
         </View>
       </View>
 
-      <View className="flex-row items-center mb-2">
-        <Text className="text-gray-600 text-sm">📍 {playdate.location.name}</Text>
+      <View style={styles.locationRow}>
+        <Text style={styles.locationText}>📍 {playdate.location.name}</Text>
       </View>
 
-      <View className="flex-row items-center space-x-4">
-        <View className="flex-row items-center">
-          <Text className="text-gray-600 text-sm">
-            👤 {playdate.participants.length} perhettä
-          </Text>
-        </View>
-        <View className="flex-row items-center">
-          <Text className="text-gray-600 text-sm">
-            👶 {childrenCount} lasta
-          </Text>
-        </View>
-        <View className="flex-row items-center">
-          <Text className="text-gray-600 text-sm">
-            🎂 {playdate.ageRange.min}-{playdate.ageRange.max}v
-          </Text>
-        </View>
+      <View style={styles.statsRow}>
+        <Text style={styles.statText}>
+          👤 {playdate.participants.length} perhettä
+        </Text>
+        <Text style={styles.statText}>
+          👶 {childrenCount} lasta
+        </Text>
+        <Text style={styles.statText}>
+          🎂 {playdate.ageRange.min}-{playdate.ageRange.max}v
+        </Text>
       </View>
 
       {playdate.description && (
-        <Text className="text-gray-500 text-sm mt-2" numberOfLines={2}>
+        <Text style={styles.description} numberOfLines={2}>
           {playdate.description}
         </Text>
       )}
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f3f4f6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    flex: 1,
+  },
+  timeBadge: {
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  timeText: {
+    color: '#b91c1c',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  locationText: {
+    color: '#4b5563',
+    fontSize: 14,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statText: {
+    color: '#4b5563',
+    fontSize: 14,
+  },
+  description: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginTop: 8,
+  },
+});
