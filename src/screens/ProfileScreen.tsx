@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Alert, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TabParamList, User, Child } from '../types';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useAuth } from '../hooks/useAuth';
 import { firestoreService } from '../services/firestore.service';
+import { colors, spacing, borderRadius, typography, shadows } from '../theme';
 
 type Props = NativeStackScreenProps<TabParamList, 'Profile'>;
 
@@ -17,7 +18,6 @@ const ProfileScreen: React.FC<Props> = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Uuden lapsen lisäyslomake
   const [showAddChild, setShowAddChild] = useState(false);
   const [childName, setChildName] = useState('');
   const [childAge, setChildAge] = useState('');
@@ -37,7 +37,6 @@ const ProfileScreen: React.FC<Props> = () => {
         setPhoneNumber(userData.phoneNumber || '');
         setChildren(userData.children || []);
       } else {
-        // Jos käyttäjätietoja ei ole, asetetaan oletusarvot
         setName(user.displayName || '');
       }
     } catch (error) {
@@ -61,7 +60,7 @@ const ProfileScreen: React.FC<Props> = () => {
         children,
       } as Partial<User>);
 
-      Alert.alert('Onnistui!', 'Profiili päivitetty');
+      Alert.alert('Tallennettu', 'Profiilisi on päivitetty');
     } catch (error) {
       console.error('Error saving profile:', error);
       Alert.alert('Virhe', 'Profiilin tallentaminen epäonnistui');
@@ -100,7 +99,7 @@ const ProfileScreen: React.FC<Props> = () => {
   const handleRemoveChild = (index: number) => {
     Alert.alert(
       'Poista lapsi',
-      'Haluatko varmasti poistaa lapsen?',
+      'Haluatko varmasti poistaa tämän?',
       [
         { text: 'Peruuta', style: 'cancel' },
         {
@@ -139,63 +138,69 @@ const ProfileScreen: React.FC<Props> = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Ladataan...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Profiili</Text>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.avatarContainer}>
+          <Text style={styles.avatarText}>
+            {name ? name[0]?.toUpperCase() : user?.email?.[0]?.toUpperCase() || '?'}
+          </Text>
+        </View>
+        <Text style={styles.headerName}>{name || 'Käyttäjä'}</Text>
         <Text style={styles.headerEmail}>{user?.email}</Text>
       </View>
 
       <View style={styles.content}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            Perustiedot
-          </Text>
+        {/* Basic Info */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Perustiedot</Text>
+          <View style={styles.card}>
+            <Input
+              label="Nimi"
+              value={name}
+              onChangeText={setName}
+              placeholder="Anna Meikäläinen"
+            />
 
-          <Input
-            label="Nimi *"
-            value={name}
-            onChangeText={setName}
-            placeholder="Anna Meikäläinen"
-          />
+            <Input
+              label="Puhelinnumero"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholder="+358 40 123 4567"
+              keyboardType="phone-pad"
+            />
 
-          <Input
-            label="Puhelinnumero"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            placeholder="+358 40 123 4567"
-            keyboardType="phone-pad"
-          />
-
-          <Button
-            title="Tallenna tiedot"
-            onPress={handleSaveProfile}
-            loading={saving}
-          />
+            <Button
+              title="Tallenna"
+              onPress={handleSaveProfile}
+              loading={saving}
+            />
+          </View>
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>
-              Lapset ({children.length})
-            </Text>
+        {/* Children */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Lapset</Text>
             <TouchableOpacity
               onPress={() => setShowAddChild(!showAddChild)}
               style={styles.addButton}
+              activeOpacity={0.7}
             >
               <Text style={styles.addButtonText}>
-                {showAddChild ? 'Peruuta' : '+ Lisää lapsi'}
+                {showAddChild ? 'Peruuta' : '+ Lisää'}
               </Text>
             </TouchableOpacity>
           </View>
 
           {showAddChild && (
-            <View style={styles.addChildForm}>
+            <View style={styles.addChildCard}>
               <Input
                 label="Lapsen nimi"
                 value={childName}
@@ -210,28 +215,32 @@ const ProfileScreen: React.FC<Props> = () => {
                 keyboardType="numeric"
               />
               <Button
-                title="Lisää"
+                title="Lisää lapsi"
                 onPress={handleAddChild}
                 variant="secondary"
               />
             </View>
           )}
 
-          {children.length === 0 ? (
-            <View style={styles.emptyChildren}>
-              <Text style={styles.emptyIcon}>👶</Text>
-              <Text style={styles.emptyText}>Ei lisättyjä lapsia</Text>
+          {children.length === 0 && !showAddChild ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyText}>
+                Ei lisättyjä lapsia vielä
+              </Text>
+              <Text style={styles.emptyHint}>
+                Lisää lapsesi tiedot, niin muut näkevät ketkä ovat tulossa leikkimään
+              </Text>
             </View>
           ) : (
             children.map((child, index) => (
-              <View
-                key={index}
-                style={styles.childCard}
-              >
-                <View style={styles.childInfo}>
-                  <Text style={styles.childName}>
-                    {child.name}
+              <View key={index} style={styles.childCard}>
+                <View style={styles.childAvatar}>
+                  <Text style={styles.childAvatarText}>
+                    {child.name[0]?.toUpperCase()}
                   </Text>
+                </View>
+                <View style={styles.childInfo}>
+                  <Text style={styles.childName}>{child.name}</Text>
                   <Text style={styles.childAge}>
                     {child.age} {child.age === 1 ? 'vuosi' : 'vuotta'}
                   </Text>
@@ -239,6 +248,7 @@ const ProfileScreen: React.FC<Props> = () => {
                 <TouchableOpacity
                   onPress={() => handleRemoveChild(index)}
                   style={styles.removeButton}
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.removeButtonText}>Poista</Text>
                 </TouchableOpacity>
@@ -247,16 +257,16 @@ const ProfileScreen: React.FC<Props> = () => {
           )}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            Asetukset
-          </Text>
-          
-          <Button
-            title="Kirjaudu ulos"
-            onPress={handleLogout}
-            variant="outline"
-          />
+        {/* Settings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Asetukset</Text>
+          <View style={styles.card}>
+            <Button
+              title="Kirjaudu ulos"
+              onPress={handleLogout}
+              variant="ghost"
+            />
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -266,115 +276,155 @@ const ProfileScreen: React.FC<Props> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
-  loadingText: {
-    color: '#6b7280',
+  header: {
+    backgroundColor: colors.primary,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.xxxl + spacing.xl,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
   },
-  headerContainer: {
-    backgroundColor: '#dc2626',
-    paddingHorizontal: 24,
-    paddingTop: 48,
-    paddingBottom: 80,
+  avatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.md,
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  avatarText: {
+    fontSize: typography.sizes.xxl,
+    fontWeight: typography.weights.bold,
     color: '#fff',
-    marginBottom: 8,
+  },
+  headerName: {
+    fontSize: typography.sizes.xl,
+    fontWeight: typography.weights.bold,
+    color: '#fff',
+    marginBottom: spacing.xs,
   },
   headerEmail: {
-    color: '#fecaca',
+    fontSize: typography.sizes.sm,
+    color: 'rgba(255,255,255,0.8)',
   },
   content: {
-    paddingHorizontal: 24,
-    marginTop: -48,
+    padding: spacing.xl,
+    marginTop: -spacing.xl,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+  section: {
+    marginBottom: spacing.xl,
   },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  cardHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.md,
+    marginLeft: spacing.xs,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    ...shadows.sm,
   },
   addButton: {
-    backgroundColor: '#16a34a',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: colors.secondaryLight,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.md,
   },
   addButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: colors.secondary,
+    fontWeight: typography.weights.semibold,
+    fontSize: typography.sizes.sm,
   },
-  addChildForm: {
-    backgroundColor: '#f9fafb',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
+  addChildCard: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows.sm,
   },
-  emptyChildren: {
-    paddingVertical: 32,
+  emptyCard: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
     alignItems: 'center',
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 8,
+    ...shadows.sm,
   },
   emptyText: {
-    color: '#6b7280',
+    color: colors.textSecondary,
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.medium,
+    marginBottom: spacing.xs,
+  },
+  emptyHint: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.sm,
+    textAlign: 'center',
+    lineHeight: typography.sizes.sm * typography.lineHeights.relaxed,
   },
   childCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 8,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    ...shadows.sm,
+  },
+  childAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.accentLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  childAvatarText: {
+    color: colors.accent,
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.lg,
   },
   childInfo: {
     flex: 1,
   },
   childName: {
-    fontWeight: '600',
-    color: '#111827',
-    fontSize: 18,
+    fontWeight: typography.weights.semibold,
+    color: colors.text,
+    fontSize: typography.sizes.md,
   },
   childAge: {
-    color: '#6b7280',
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
   },
   removeButton: {
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: colors.errorLight,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
   },
   removeButtonText: {
-    color: '#dc2626',
-    fontWeight: '600',
+    color: colors.error,
+    fontWeight: typography.weights.semibold,
+    fontSize: typography.sizes.sm,
   },
 });
 

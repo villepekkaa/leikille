@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Alert, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../types';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useAuth } from '../hooks/useAuth';
+import { colors, spacing, typography } from '../theme';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
@@ -43,49 +44,68 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Luo tili 🎉</Text>
-        <Text style={styles.subtitle}>
-          Aloita leikkitreffien järjestäminen
-        </Text>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoText}>leikille</Text>
+          </View>
+          <Text style={styles.title}>Luo tili</Text>
+          <Text style={styles.subtitle}>
+            Liity mukaan ja järjestä leikkitreffejä perheellesi
+          </Text>
+        </View>
 
-        <Input
-          label="Nimi"
-          value={name}
-          onChangeText={setName}
-          placeholder="Anna Meikäläinen"
-        />
+        <View style={styles.form}>
+          <Input
+            label="Nimi"
+            value={name}
+            onChangeText={setName}
+            placeholder="Anna Meikäläinen"
+            autoCapitalize="words"
+          />
 
-        <Input
-          label="Sähköposti"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="anna@esimerkki.fi"
-          keyboardType="email-address"
-        />
+          <Input
+            label="Sähköposti"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="anna@esimerkki.fi"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-        <Input
-          label="Salasana"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="••••••••"
-          secureTextEntry
-        />
+          <Input
+            label="Salasana"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Vähintään 6 merkkiä"
+            secureTextEntry
+          />
 
-        <Input
-          label="Vahvista salasana"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="••••••••"
-          secureTextEntry
-        />
+          <Input
+            label="Vahvista salasana"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Kirjoita salasana uudelleen"
+            secureTextEntry
+          />
 
-        <Button
-          title="Rekisteröidy"
-          onPress={handleRegister}
-          loading={loading}
-        />
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Luo tili"
+              onPress={handleRegister}
+              loading={loading}
+              size="lg"
+            />
+          </View>
+        </View>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Onko sinulla jo tili? </Text>
@@ -96,42 +116,66 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             Kirjaudu sisään
           </Text>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.backgroundWarm,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 80,
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.xxl,
+  },
+  header: {
+    marginBottom: spacing.xl,
+  },
+  logoContainer: {
+    marginBottom: spacing.xl,
+  },
+  logoText: {
+    fontSize: typography.sizes.xl,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+    letterSpacing: -0.5,
   },
   title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 8,
+    fontSize: typography.sizes.xxxl,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    color: '#6b7280',
-    marginBottom: 32,
+    fontSize: typography.sizes.md,
+    color: colors.textSecondary,
+    lineHeight: typography.sizes.md * typography.lineHeights.relaxed,
+  },
+  form: {
+    marginBottom: spacing.xl,
+  },
+  buttonContainer: {
+    marginTop: spacing.md,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: 'auto',
+    paddingTop: spacing.xl,
   },
   footerText: {
-    color: '#6b7280',
+    color: colors.textSecondary,
+    fontSize: typography.sizes.md,
   },
   linkText: {
-    color: '#dc2626',
-    fontWeight: '600',
+    color: colors.primary,
+    fontWeight: typography.weights.semibold,
+    fontSize: typography.sizes.md,
   },
 });
 

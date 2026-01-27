@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Alert, TouchableOpacity, Platform, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { TabParamList, Location } from '../types';
@@ -8,6 +8,7 @@ import { Button } from '../components/Button';
 import { firestoreService } from '../services/firestore.service';
 import { useAuth } from '../hooks/useAuth';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { colors, spacing, borderRadius, typography, shadows } from '../theme';
 
 type Props = NativeStackScreenProps<TabParamList, 'CreatePlaydate'>;
 
@@ -26,7 +27,6 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
   const [maxParticipants, setMaxParticipants] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Kartan oletussijainti (Helsinki)
   const [region, setRegion] = useState<Region>({
     latitude: 60.1699,
     longitude: 24.9384,
@@ -87,11 +87,10 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
         },
       });
 
-      Alert.alert('Onnistui!', 'Leikkitreffi on luotu', [
+      Alert.alert('Valmista!', 'Leikkitreffi luotu onnistuneesti', [
         {
           text: 'OK',
           onPress: () => {
-            // Tyhjennetään lomake
             setTitle('');
             setDescription('');
             setLocationName('');
@@ -121,205 +120,244 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>
-          Luo uusi leikkitreffi
-        </Text>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.content}>
+          {/* Basic Info Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Perustiedot</Text>
+            <View style={styles.card}>
+              <Input
+                label="Otsikko"
+                value={title}
+                onChangeText={setTitle}
+                placeholder="esim. Leikkipuistossa hauskanpitoa"
+              />
 
-        <Input
-          label="Otsikko *"
-          value={title}
-          onChangeText={setTitle}
-          placeholder="esim. Leikkipuistossa"
-        />
+              <Input
+                label="Kuvaus"
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Kerro lisää, mitä on luvassa..."
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+          </View>
 
-        <Input
-          label="Kuvaus"
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Kerro lisää leikistä..."
-        />
+          {/* Time Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Aika</Text>
+            <View style={styles.card}>
+              <Text style={styles.inputLabel}>Päivämäärä</Text>
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                style={styles.dateButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.dateButtonText}>
+                  {date.toLocaleDateString('fi-FI', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                  })}
+                </Text>
+                <Text style={styles.dateChevron}>›</Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="default"
+                  onChange={onDateChange}
+                  minimumDate={new Date()}
+                />
+              )}
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Päivämäärä *</Text>
-          <TouchableOpacity
-            onPress={() => setShowDatePicker(true)}
-            style={styles.dateButton}
-          >
-            <Text style={styles.dateButtonText}>
-              {date.toLocaleDateString('fi-FI', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
-            </Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-              minimumDate={new Date()}
-            />
-          )}
-        </View>
+              <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                  <Input
+                    label="Alkaa"
+                    value={startTime}
+                    onChangeText={setStartTime}
+                    placeholder="14:00"
+                  />
+                </View>
+                <View style={styles.halfWidth}>
+                  <Input
+                    label="Päättyy"
+                    value={endTime}
+                    onChangeText={setEndTime}
+                    placeholder="16:00"
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
 
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Input
-              label="Alkaa *"
-              value={startTime}
-              onChangeText={setStartTime}
-              placeholder="14:00"
+          {/* Participants Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Osallistujat</Text>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                  <Input
+                    label="Ikä min"
+                    value={minAge}
+                    onChangeText={setMinAge}
+                    placeholder="2"
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={styles.halfWidth}>
+                  <Input
+                    label="Ikä max"
+                    value={maxAge}
+                    onChangeText={setMaxAge}
+                    placeholder="5"
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+
+              <Input
+                label="Max osallistujat"
+                value={maxParticipants}
+                onChangeText={setMaxParticipants}
+                placeholder="Jätä tyhjäksi jos ei rajoitusta"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
+          {/* Location Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Sijainti</Text>
+            <View style={styles.card}>
+              <Input
+                label="Paikan nimi"
+                value={locationName}
+                onChangeText={setLocationName}
+                placeholder="esim. Töölön leikkipuisto"
+              />
+
+              <Input
+                label="Osoite"
+                value={locationAddress}
+                onChangeText={setLocationAddress}
+                placeholder="esim. Töölönkatu 12, Helsinki"
+              />
+
+              <Text style={styles.mapLabel}>
+                Napauta karttaa valitaksesi tarkka sijainti
+              </Text>
+              <View style={styles.mapContainer}>
+                <MapView
+                  style={styles.map}
+                  region={region}
+                  onRegionChangeComplete={setRegion}
+                  onPress={handleMapPress}
+                >
+                  <Marker coordinate={markerCoordinate} />
+                </MapView>
+              </View>
+            </View>
+          </View>
+
+          {/* Submit Button */}
+          <View style={styles.submitContainer}>
+            <Button
+              title="Luo leikkitreffi"
+              onPress={handleCreatePlaydate}
+              loading={loading}
+              size="lg"
             />
           </View>
-          <View style={styles.halfWidth}>
-            <Input
-              label="Päättyy *"
-              value={endTime}
-              onChangeText={setEndTime}
-              placeholder="16:00"
-            />
-          </View>
         </View>
-
-        <View style={styles.row}>
-          <View style={styles.halfWidth}>
-            <Input
-              label="Ikä min"
-              value={minAge}
-              onChangeText={setMinAge}
-              placeholder="2"
-              keyboardType="numeric"
-            />
-          </View>
-          <View style={styles.halfWidth}>
-            <Input
-              label="Ikä max"
-              value={maxAge}
-              onChangeText={setMaxAge}
-              placeholder="5"
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        <Input
-          label="Max osallistujat"
-          value={maxParticipants}
-          onChangeText={setMaxParticipants}
-          placeholder="Ei rajoitusta"
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.sectionTitle}>
-          Sijainti
-        </Text>
-
-        <Input
-          label="Paikan nimi *"
-          value={locationName}
-          onChangeText={setLocationName}
-          placeholder="esim. Keskuspuisto"
-        />
-
-        <Input
-          label="Osoite *"
-          value={locationAddress}
-          onChangeText={setLocationAddress}
-          placeholder="esim. Mannerheimintie 12, Helsinki"
-        />
-
-        <Text style={styles.mapLabel}>
-          Valitse sijainti kartalta
-        </Text>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            region={region}
-            onRegionChangeComplete={setRegion}
-            onPress={handleMapPress}
-          >
-            <Marker coordinate={markerCoordinate} />
-          </MapView>
-        </View>
-
-        <Button
-          title="Luo leikkitreffi"
-          onPress={handleCreatePlaydate}
-          loading={loading}
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    padding: spacing.xl,
+    paddingBottom: spacing.xxxl,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 24,
+  section: {
+    marginBottom: spacing.xl,
   },
-  inputGroup: {
-    marginBottom: 16,
+  sectionTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.md,
+    marginLeft: spacing.xs,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    ...shadows.sm,
   },
   inputLabel: {
-    color: '#374151',
-    fontWeight: '500',
-    marginBottom: 8,
+    color: colors.text,
+    fontWeight: typography.weights.medium,
+    fontSize: typography.sizes.sm,
+    marginBottom: spacing.sm,
   },
   dateButton: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md + 2,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   dateButtonText: {
-    color: '#111827',
+    color: colors.text,
+    fontSize: typography.sizes.md,
+  },
+  dateChevron: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.xl,
   },
   row: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 16,
+    gap: spacing.md,
   },
   halfWidth: {
     flex: 1,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-    marginTop: 24,
-  },
   mapLabel: {
-    color: '#374151',
-    fontWeight: '500',
-    marginBottom: 8,
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
+    marginBottom: spacing.sm,
   },
   mapContainer: {
-    height: 256,
-    borderRadius: 8,
+    height: 200,
+    borderRadius: borderRadius.md,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    marginBottom: 24,
   },
   map: {
     flex: 1,
+  },
+  submitContainer: {
+    marginTop: spacing.md,
   },
 });
 

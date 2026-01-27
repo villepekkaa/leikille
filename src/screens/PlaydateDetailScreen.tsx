@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker } from 'react-native-maps';
 import { RootStackParamList, Playdate } from '../types';
 import { firestoreService } from '../services/firestore.service';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/Button';
+import { colors, spacing, borderRadius, typography, shadows } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PlaydateDetail'>;
 
@@ -35,7 +36,6 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
   const handleJoin = async () => {
     if (!user || !playdate) return;
 
-    // Tarkista onko käyttäjä jo mukana
     const alreadyJoined = playdate.participants.some(p => p.userId === user.uid);
     if (alreadyJoined) {
       Alert.alert('Huomio', 'Olet jo liittynyt tähän leikkiin');
@@ -44,10 +44,9 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
 
     setJoining(true);
     try {
-      // Tässä voisi kysyä lapsien määrää
       await firestoreService.playdates.joinPlaydate(playdateId, user.uid, 1);
-      Alert.alert('Onnistui!', 'Olet nyt mukana leikissä');
-      loadPlaydate(); // Päivitä data
+      Alert.alert('Mahtavaa!', 'Olet nyt mukana leikissä');
+      loadPlaydate();
     } catch (error) {
       Alert.alert('Virhe', 'Leikkiin liittyminen epäonnistui');
     } finally {
@@ -58,7 +57,7 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
   if (loading || !playdate) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Ladataan...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -70,6 +69,13 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
 
   const isOrganizer = user?.uid === playdate.organizerId;
   const hasJoined = playdate.participants.some(p => p.userId === user?.uid);
+
+  const dateString = new Date(playdate.date).toLocaleDateString('fi-FI', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+  const formattedDate = dateString.charAt(0).toUpperCase() + dateString.slice(1);
 
   return (
     <View style={styles.container}>
@@ -92,133 +98,125 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
         />
       </MapView>
 
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
+          {/* Header */}
           <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.title}>
-                {playdate.title}
-              </Text>
-              <Text style={styles.dateText}>
-                {new Date(playdate.date).toLocaleDateString('fi-FI', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                })}
-              </Text>
-            </View>
-            <View style={styles.timeBadge}>
+            <Text style={styles.title}>{playdate.title}</Text>
+            <View style={styles.metaRow}>
+              <Text style={styles.dateText}>{formattedDate}</Text>
+              <View style={styles.dot} />
               <Text style={styles.timeText}>
-                {playdate.startTime} - {playdate.endTime}
+                {playdate.startTime} – {playdate.endTime}
               </Text>
             </View>
           </View>
 
+          {/* Location Card */}
           <View style={styles.locationCard}>
-            <View style={styles.locationRow}>
-              <Text style={styles.locationIcon}>📍</Text>
-              <View style={styles.locationInfo}>
-                <Text style={styles.locationName}>
-                  {playdate.location.name}
-                </Text>
-                <Text style={styles.locationAddress}>
-                  {playdate.location.address}
-                </Text>
-              </View>
+            <View style={styles.locationIcon}>
+              <Text style={styles.locationIconText}>•</Text>
+            </View>
+            <View style={styles.locationInfo}>
+              <Text style={styles.locationName}>{playdate.location.name}</Text>
+              <Text style={styles.locationAddress}>{playdate.location.address}</Text>
             </View>
           </View>
 
-          <View style={styles.statsRow}>
+          {/* Stats */}
+          <View style={styles.statsCard}>
             <View style={styles.statItem}>
-              <Text style={styles.statIcon}>👨‍👩‍👧‍👦</Text>
-              <Text style={styles.statValue}>
-                {playdate.participants.length}
-              </Text>
+              <Text style={styles.statValue}>{playdate.participants.length}</Text>
               <Text style={styles.statLabel}>perhettä</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statIcon}>👶</Text>
-              <Text style={styles.statValue}>
-                {childrenCount}
-              </Text>
+              <Text style={styles.statValue}>{childrenCount}</Text>
               <Text style={styles.statLabel}>lasta</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statIcon}>🎂</Text>
               <Text style={styles.statValue}>
-                {playdate.ageRange.min}-{playdate.ageRange.max}
+                {playdate.ageRange.min}–{playdate.ageRange.max}
               </Text>
               <Text style={styles.statLabel}>vuotta</Text>
             </View>
           </View>
 
+          {/* Description */}
           {playdate.description && (
-            <View style={styles.descriptionSection}>
-              <Text style={styles.sectionTitle}>
-                Kuvaus
-              </Text>
-              <Text style={styles.descriptionText}>
-                {playdate.description}
-              </Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Kuvaus</Text>
+              <Text style={styles.descriptionText}>{playdate.description}</Text>
             </View>
           )}
 
-          <View style={styles.participantsSection}>
+          {/* Participants */}
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>
               Osallistujat ({playdate.participants.length})
             </Text>
-            {playdate.participants.map((participant, index) => (
-              <View
-                key={index}
-                style={styles.participantCard}
-              >
-                <View style={styles.participantAvatar}>
-                  <Text style={styles.participantInitial}>
-                    {participant.user.name?.[0] || '?'}
-                  </Text>
-                </View>
-                <View style={styles.participantInfo}>
-                  <Text style={styles.participantName}>
-                    {participant.user.name || 'Käyttäjä'}
-                  </Text>
-                  <Text style={styles.participantChildren}>
-                    {participant.childrenCount} {participant.childrenCount === 1 ? 'lapsi' : 'lasta'}
-                  </Text>
-                </View>
-                {participant.userId === playdate.organizerId && (
-                  <View style={styles.organizerBadge}>
-                    <Text style={styles.organizerText}>
-                      Järjestäjä
+            {playdate.participants.length === 0 ? (
+              <Text style={styles.emptyParticipants}>
+                Ei vielä osallistujia. Ole ensimmäinen!
+              </Text>
+            ) : (
+              playdate.participants.map((participant, index) => (
+                <View key={index} style={styles.participantCard}>
+                  <View style={styles.participantAvatar}>
+                    <Text style={styles.participantInitial}>
+                      {participant.user.name?.[0]?.toUpperCase() || '?'}
                     </Text>
                   </View>
-                )}
-              </View>
-            ))}
+                  <View style={styles.participantInfo}>
+                    <Text style={styles.participantName}>
+                      {participant.user.name || 'Käyttäjä'}
+                    </Text>
+                    <Text style={styles.participantChildren}>
+                      {participant.childrenCount} {participant.childrenCount === 1 ? 'lapsi' : 'lasta'}
+                    </Text>
+                  </View>
+                  {participant.userId === playdate.organizerId && (
+                    <View style={styles.organizerBadge}>
+                      <Text style={styles.organizerBadgeText}>Järjestäjä</Text>
+                    </View>
+                  )}
+                </View>
+              ))
+            )}
           </View>
 
-          {!isOrganizer && !hasJoined && (
-            <Button
-              title="Liity leikkiin"
-              onPress={handleJoin}
-              loading={joining}
-            />
-          )}
+          {/* Action Area */}
+          <View style={styles.actionArea}>
+            {!isOrganizer && !hasJoined && (
+              <Button
+                title="Liity mukaan"
+                onPress={handleJoin}
+                loading={joining}
+                size="lg"
+              />
+            )}
 
-          {hasJoined && !isOrganizer && (
-            <View style={styles.joinedBadge}>
-              <Text style={styles.joinedText}>
-                ✓ Olet liittynyt tähän leikkiin
-              </Text>
-            </View>
-          )}
+            {hasJoined && !isOrganizer && (
+              <View style={styles.statusCard}>
+                <View style={styles.statusIcon}>
+                  <Text style={styles.statusIconText}>✓</Text>
+                </View>
+                <Text style={styles.statusText}>Olet mukana tässä leikissä</Text>
+              </View>
+            )}
 
-          {isOrganizer && (
-            <View style={styles.organizerCard}>
-              <Text style={styles.organizerCardText}>
-                👑 Olet tämän leikkin järjestäjä
-              </Text>
-            </View>
-          )}
+            {isOrganizer && (
+              <View style={[styles.statusCard, styles.organizerStatusCard]}>
+                <View style={[styles.statusIcon, styles.organizerStatusIcon]}>
+                  <Text style={styles.statusIconText}>★</Text>
+                </View>
+                <Text style={[styles.statusText, styles.organizerStatusText]}>
+                  Olet tämän leikin järjestäjä
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -228,184 +226,223 @@ const PlaydateDetailScreen: React.FC<Props> = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    color: '#6b7280',
+    backgroundColor: colors.background,
   },
   map: {
     width: '100%',
-    height: 320,
+    height: 220,
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    padding: spacing.xl,
+    paddingBottom: spacing.xxxl,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  headerLeft: {
-    flex: 1,
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 8,
+    fontSize: typography.sizes.xxl,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    letterSpacing: -0.3,
   },
-  dateText: {
-    color: '#dc2626',
-    fontWeight: '500',
-  },
-  timeBadge: {
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 9999,
-  },
-  timeText: {
-    color: '#991b1b',
-    fontWeight: '600',
-  },
-  locationCard: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 24,
-  },
-  locationRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+  },
+  dateText: {
+    color: colors.primary,
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.medium,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.textMuted,
+    marginHorizontal: spacing.sm,
+  },
+  timeText: {
+    color: colors.textSecondary,
+    fontSize: typography.sizes.md,
+  },
+  locationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    ...shadows.sm,
   },
   locationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  locationIconText: {
+    color: colors.primary,
     fontSize: 24,
-    marginRight: 8,
+    fontWeight: typography.weights.bold,
   },
   locationInfo: {
     flex: 1,
   },
   locationName: {
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: typography.weights.semibold,
+    color: colors.text,
+    fontSize: typography.sizes.md,
+    marginBottom: 2,
   },
   locationAddress: {
-    color: '#6b7280',
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
   },
-  statsRow: {
+  statsCard: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 24,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+    ...shadows.sm,
   },
   statItem: {
+    flex: 1,
     alignItems: 'center',
   },
-  statIcon: {
-    fontSize: 32,
-    marginBottom: 4,
-  },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: typography.sizes.xl,
+    fontWeight: typography.weights.bold,
+    color: colors.text,
+    marginBottom: 2,
   },
   statLabel: {
-    color: '#6b7280',
-    fontSize: 14,
+    fontSize: typography.sizes.xs,
+    color: colors.textMuted,
   },
-  descriptionSection: {
-    marginBottom: 24,
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.border,
+    marginVertical: spacing.xs,
+  },
+  section: {
+    marginBottom: spacing.xl,
   },
   sectionTitle: {
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.semibold,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.md,
   },
   descriptionText: {
-    color: '#374151',
-    lineHeight: 24,
+    color: colors.textSecondary,
+    fontSize: typography.sizes.md,
+    lineHeight: typography.sizes.md * typography.lineHeights.relaxed,
   },
-  participantsSection: {
-    marginBottom: 24,
+  emptyParticipants: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.md,
+    fontStyle: 'italic',
   },
   participantCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    ...shadows.sm,
   },
   participantAvatar: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#fecaca',
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    backgroundColor: colors.secondaryLight,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   participantInitial: {
-    color: '#991b1b',
-    fontWeight: '600',
+    color: colors.secondary,
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.lg,
   },
   participantInfo: {
     flex: 1,
   },
   participantName: {
-    fontWeight: '500',
-    color: '#111827',
+    fontWeight: typography.weights.medium,
+    color: colors.text,
+    fontSize: typography.sizes.md,
   },
   participantChildren: {
-    color: '#6b7280',
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
   },
   organizerBadge: {
-    backgroundColor: '#dbeafe',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 9999,
+    backgroundColor: colors.accentLight,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
   },
-  organizerText: {
-    color: '#1e40af',
-    fontSize: 12,
-    fontWeight: '500',
+  organizerBadgeText: {
+    color: colors.accent,
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semibold,
   },
-  joinedBadge: {
-    backgroundColor: '#dcfce7',
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
-    borderRadius: 8,
-    padding: 16,
+  actionArea: {
+    marginTop: spacing.md,
   },
-  joinedText: {
-    color: '#15803d',
-    fontWeight: '500',
-    textAlign: 'center',
+  statusCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.secondaryLight,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
   },
-  organizerCard: {
-    backgroundColor: '#dbeafe',
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-    borderRadius: 8,
-    padding: 16,
+  organizerStatusCard: {
+    backgroundColor: colors.accentLight,
   },
-  organizerCardText: {
-    color: '#1e40af',
-    fontWeight: '500',
-    textAlign: 'center',
+  statusIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  organizerStatusIcon: {
+    backgroundColor: colors.accent,
+  },
+  statusIconText: {
+    color: '#fff',
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.md,
+  },
+  statusText: {
+    color: colors.secondaryDark,
+    fontWeight: typography.weights.medium,
+    fontSize: typography.sizes.md,
+    flex: 1,
+  },
+  organizerStatusText: {
+    color: colors.accent,
   },
 });
 

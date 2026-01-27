@@ -1,23 +1,28 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle } from 'react-native';
+import { colors, spacing, borderRadius, typography } from '../theme';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   disabled?: boolean;
+  style?: ViewStyle;
 }
 
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
   variant = 'primary',
+  size = 'md',
   loading = false,
   disabled = false,
+  style,
 }) => {
   const getButtonStyle = () => {
-    const baseStyles: any[] = [styles.button];
+    const baseStyles: any[] = [styles.button, styles[`size_${size}`]];
     
     switch (variant) {
       case 'primary':
@@ -29,17 +34,51 @@ export const Button: React.FC<ButtonProps> = ({
       case 'outline':
         baseStyles.push(styles.outlineButton);
         break;
+      case 'ghost':
+        baseStyles.push(styles.ghostButton);
+        break;
     }
     
     if (disabled) {
       baseStyles.push(styles.disabled);
     }
     
+    if (style) {
+      baseStyles.push(style);
+    }
+    
     return baseStyles;
   };
 
   const getTextStyle = () => {
-    return variant === 'outline' ? styles.outlineText : styles.buttonText;
+    const textStyles: any[] = [styles.text, styles[`text_${size}`]];
+    
+    switch (variant) {
+      case 'primary':
+        textStyles.push(styles.primaryText);
+        break;
+      case 'secondary':
+        textStyles.push(styles.secondaryText);
+        break;
+      case 'outline':
+        textStyles.push(styles.outlineText);
+        break;
+      case 'ghost':
+        textStyles.push(styles.ghostText);
+        break;
+    }
+    
+    return textStyles;
+  };
+
+  const getLoaderColor = () => {
+    switch (variant) {
+      case 'outline':
+      case 'ghost':
+        return colors.primary;
+      default:
+        return '#fff';
+    }
   };
 
   return (
@@ -47,13 +86,12 @@ export const Button: React.FC<ButtonProps> = ({
       onPress={onPress}
       disabled={disabled || loading}
       style={getButtonStyle()}
+      activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? '#dc2626' : '#fff'} />
+        <ActivityIndicator color={getLoaderColor()} size="small" />
       ) : (
-        <Text style={[styles.text, getTextStyle()]}>
-          {title}
-        </Text>
+        <Text style={getTextStyle()}>{title}</Text>
       )}
     </TouchableOpacity>
   );
@@ -61,35 +99,74 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: borderRadius.md,
   },
+  
+  // Sizes
+  size_sm: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.sm,
+  },
+  size_md: {
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.xl,
+  },
+  size_lg: {
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.lg,
+  },
+  
+  // Variants
   primaryButton: {
-    backgroundColor: '#dc2626',
+    backgroundColor: colors.primary,
   },
   secondaryButton: {
-    backgroundColor: '#16a34a',
+    backgroundColor: colors.secondary,
   },
   outlineButton: {
     backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#dc2626',
+    borderWidth: 1.5,
+    borderColor: colors.primary,
   },
+  ghostButton: {
+    backgroundColor: colors.primaryLight,
+  },
+  
+  // States
   disabled: {
     opacity: 0.5,
   },
+  
+  // Text
   text: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontWeight: typography.weights.semibold,
     textAlign: 'center',
   },
-  buttonText: {
+  text_sm: {
+    fontSize: typography.sizes.sm,
+  },
+  text_md: {
+    fontSize: typography.sizes.md,
+  },
+  text_lg: {
+    fontSize: typography.sizes.lg,
+  },
+  
+  // Text colors
+  primaryText: {
+    color: '#fff',
+  },
+  secondaryText: {
     color: '#fff',
   },
   outlineText: {
-    color: '#dc2626',
+    color: colors.primary,
+  },
+  ghostText: {
+    color: colors.primary,
   },
 });
