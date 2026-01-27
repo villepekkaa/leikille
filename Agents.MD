@@ -20,6 +20,7 @@ Repo Layout
 - src/config: configuration (firebase)
 - src/hooks: custom hooks
 - src/types: TypeScript types
+- src/theme: theme configuration
 
 Key Scripts (package.json)
 - npm start: start Expo
