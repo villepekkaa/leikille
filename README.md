@@ -1,178 +1,112 @@
-# Leikille - Leikkitreffisovellus
+# Leikille
 
-React Native -sovellus, jossa lapsiperheet voivat sopia keskenään leikkitreffejä.
+Leikille on React Native -harjoitusprojekti, jossa lapsiperheet voivat sopia keskenään leikkitreffejä. Projekti on rakennettu ammattimaisin periaattein, mutta se on samalla oppimisympäristö: koodia kehitetään iteratiivisesti ja uusia käytäntöjä testataan vaiheittain.
 
-## 🚀 Teknologiat
+## Teknologiat
 
-- **React Native** (Expo)
-- **TypeScript**
-- **Firebase Authentication** - Käyttäjien kirjautuminen
-- **Cloud Firestore** - NoSQL-tietokanta leikkitreffeille
-- **React Navigation** - Navigaatio
-- **StyleSheet** - React Native tyylittely
-- **React Native Maps** - Karttanäkymät
+- React Native (Expo)
+- TypeScript
+- Firebase Authentication
+- Cloud Firestore
+- React Navigation
+- StyleSheet + teematokenit
+- React Native Maps
 
-## 📁 Projektin rakenne
+## Ominaisuudet
+
+Valmiina
+- Rekisteröinti ja kirjautuminen
+- Päivän leikkitreffien listaus
+- Yksittäisen leikin tarkastelu kartalla
+- Leikkiin liittyminen ja osallistujat
+- Uuden leikin luonti
+- Profiilisivu
+- Bottom tab -navigaatio
+
+Suunnitteilla
+- Push-notifikaatiot
+- Chat-toiminto
+- Kuvien lisäys
+- Suodatus ja haku
+- AsyncStorage Firebase-autentikaatioon
+
+## Projektin rakenne
 
 ```
 src/
 ├── components/     # Uudelleenkäytettävät UI-komponentit
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   └── PlaydateCard.tsx
 ├── screens/        # Näkymät
-│   ├── LoginScreen.tsx
-│   ├── RegisterScreen.tsx
-│   ├── HomeScreen.tsx
-│   └── PlaydateDetailScreen.tsx
-├── hooks/          # Custom React hookit
-│   └── useAuth.ts
+├── hooks/          # Custom hookit
 ├── services/       # Firebase-palvelut
-│   ├── auth.service.ts
-│   └── firestore.service.ts
-├── navigation/     # React Navigation setup
-│   └── AppNavigator.tsx
-├── types/          # TypeScript tyypit
-│   └── index.ts
-├── config/         # Konfiguraatiotiedostot
-│   └── firebase.ts
+├── navigation/     # Navigaatiot
+├── types/          # TypeScript-tyypit
+├── config/         # Konfiguraatiot
 └── utils/          # Apufunktiot (tuleva)
 ```
 
-## ⚙️ Asennus
+## Asennus ja käynnistys
 
-1. **Kloonaa repositorio**
-   ```bash
-   git clone <repository-url>
-   cd leikille
-   ```
-
-2. **Asenna riippuvuudet**
+1. Asenna riippuvuudet:
    ```bash
    npm install
    ```
 
-3. **Konfiguroi Firebase**
-   
-   - Luo projekti [Firebase Console](https://console.firebase.google.com/):ssa
-   - Aktivoi Authentication (Email/Password)
-   - Luo Firestore-tietokanta
-   - Kopioi Firebase-konfiguraatio tiedostoon `src/config/firebase.ts`:
-   
-   ```typescript
-   const firebaseConfig = {
-     apiKey: "YOUR_API_KEY",
-     authDomain: "YOUR_AUTH_DOMAIN",
-     projectId: "YOUR_PROJECT_ID",
-     storageBucket: "YOUR_STORAGE_BUCKET",
-     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-     appId: "YOUR_APP_ID"
-   };
-   ```
+2. Konfiguroi Firebase (ohjeet):
+   - Vaiheittainen ohje ja vianetsintä: `SETUP.md`.
+   - Täytä `src/config/firebase.ts` omilla Firebase-tiedoilla.
 
-4. **Käynnistä sovellus**
+3. Käynnistä sovellus:
    ```bash
    npm start
    ```
-   
-   Valitse sitten:
-   - `i` - iOS simulator
-   - `a` - Android emulator
-   - Skannaa QR-koodi Expo Go -sovelluksella (iOS/Android)
 
-## 🎨 Tyylittely
+Pikanäppäimet Expo CLI:ssa:
+- `i` = iOS-simulaattori (macOS)
+- `a` = Android-emulaattori
+- QR-koodi = Expo Go -sovellus
 
-Sovellus käyttää React Native StyleSheetiä. Värit on määritelty yhdenmukaisesti kaikkialla sovelluksessa:
+## Komennot
 
-- **Primary** (#dc2626) - Punainen (toimintopainikkeet)
-- **Secondary** (#16a34a) - Vihreä (onnistumisviestit)
-- **Accent** (#3b82f6) - Sininen (korostukset)
+- `npm start` — Expo dev server
+- `npm run ios` — iOS-simulaattori
+- `npm run android` — Android-emulaattori
+- `npm run web` — Web
+- `npm start -- --clear` — tyhjennä välimuisti
 
-Käyttö komponenteissa:
+## Tyylittely
+
+Käytä teematokeneita `src/theme/index.ts` ja `StyleSheet.create` -määrittelyjä. Vältä kovakoodattuja värejä.
+
+Esimerkki:
 ```tsx
+import { colors, spacing } from '../theme';
+
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#dc2626',
-    padding: 16,
-    borderRadius: 8,
-  },
-  title: {
-    color: '#fff',
-    fontWeight: 'bold',
+    backgroundColor: colors.primary,
+    padding: spacing.lg,
   },
 });
-
-<View style={styles.container}>
-  <Text style={styles.title}>Tervetuloa!</Text>
-</View>
 ```
 
-## 📱 Ominaisuudet
+## Firestore-rakenne (tiivistetty)
 
-### Valmiina
-- ✅ Käyttäjien rekisteröinti ja kirjautuminen
-- ✅ Päivän leikkitreffien listaus
-- ✅ Yksittäisen leikkin tarkastelu kartalla
-- ✅ Leikkiin liittyminen
-- ✅ Osallistujien näyttö
-- ✅ Uuden leikkin luominen
-- ✅ Profiilisivu
-- ✅ Bottom tab navigaatio
+`users`-kokoelma sisältää käyttäjien perusprofiilin.
+`playdates`-kokoelma sisältää leikkitreffien tiedot, sijainnin ja osallistujat.
 
-### Tulossa
-- 🔄 Push-notifikaatiot
-- 🔄 Chat-toiminto
-- 🔄 Kuvien lisäys
-- 🔄 Suodatus ja haku
-- 🔄 AsyncStorage Firebase-autentikaatioon
+Tarkempi malli löytyy koodista: `src/types/index.ts`.
 
-## 🗄️ Firestore-rakenne
+## Kehitystyyli (lyhyesti)
 
-### Users-kokoelma
-```typescript
-{
-  id: string;
-  email: string;
-  name: string;
-  phoneNumber?: string;
-  children: Child[];
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
-```
+- Pidä koodi selkeänä ja pienissä osissa.
+- Palvelukutsut `src/services/`-kansioon.
+- Tyypit `src/types/index.ts`.
+- UI-tekstit pääosin suomeksi.
 
-### Playdates-kokoelma
-```typescript
-{
-  id: string;
-  title: string;
-  description: string;
-  organizerId: string;
-  location: {
-    name: string;
-    address: string;
-    coordinates: { latitude: number; longitude: number; }
-  };
-  date: Timestamp;
-  startTime: string;
-  endTime: string;
-  participants: Participant[];
-  maxParticipants?: number;
-  ageRange: { min: number; max: number; };
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
-```
+## Testaus
 
-## 🤝 Kehitys
+Tällä hetkellä testejä ei ole konfiguroitu. Testaus lisätään myöhemmin, kun perusarkkitehtuuri on vakiintunut.
 
-Sovellus on rakennettu modulaarisesti, joten uusien ominaisuuksien lisääminen on helppoa:
-
-1. Luo uusi komponentti `src/components/`-kansioon
-2. Luo uusi näkymä `src/screens/`-kansioon
-3. Lisää navigaatio `src/navigation/AppNavigator.tsx`-tiedostoon
-4. Luo tarvittavat servicet `src/services/`-kansioon
-
-## 📝 Lisenssi
+## Lisenssi
 
 MIT

@@ -1,14 +1,19 @@
 import React from 'react';
-import { TextInput, Text, View, StyleSheet } from 'react-native';
+import { TextInput, Text, View, StyleSheet, ViewStyle, TextInputProps } from 'react-native';
+import { colors, spacing, borderRadius, typography } from '../theme';
 
-interface InputProps {
-  label: string;
+interface InputProps extends Omit<TextInputProps, 'style'> {
+  label?: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   error?: string;
+  helper?: string;
+  containerStyle?: ViewStyle;
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -19,46 +24,78 @@ export const Input: React.FC<InputProps> = ({
   secureTextEntry = false,
   keyboardType = 'default',
   error,
+  helper,
+  containerStyle,
+  multiline = false,
+  numberOfLines = 1,
+  ...rest
 }) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        style={[styles.input, error && styles.inputError]}
-      />
+    <View style={[styles.container, containerStyle]}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <View style={[styles.inputWrapper, error && styles.inputWrapperError]}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={colors.textMuted}
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          style={[
+            styles.input,
+            multiline && styles.inputMultiline,
+          ]}
+          {...rest}
+        />
+      </View>
       {error && <Text style={styles.errorText}>{error}</Text>}
+      {helper && !error && <Text style={styles.helperText}>{helper}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   label: {
-    color: '#374151',
-    fontWeight: '500',
-    marginBottom: 8,
+    color: colors.text,
+    fontWeight: typography.weights.medium,
+    fontSize: typography.sizes.sm,
+    marginBottom: spacing.sm,
+  },
+  inputWrapper: {
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    overflow: 'hidden',
+  },
+  inputWrapperError: {
+    borderColor: colors.error,
+    backgroundColor: colors.errorLight,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md + 2,
+    fontSize: typography.sizes.md,
+    color: colors.text,
   },
-  inputError: {
-    borderColor: '#ef4444',
+  inputMultiline: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: spacing.md,
   },
   errorText: {
-    color: '#ef4444',
-    fontSize: 14,
-    marginTop: 4,
+    color: colors.error,
+    fontSize: typography.sizes.sm,
+    marginTop: spacing.xs,
+  },
+  helperText: {
+    color: colors.textMuted,
+    fontSize: typography.sizes.xs,
+    marginTop: spacing.xs,
   },
 });

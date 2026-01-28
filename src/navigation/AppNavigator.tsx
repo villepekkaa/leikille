@@ -5,8 +5,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../hooks/useAuth';
 import { RootStackParamList, AuthStackParamList, TabParamList } from '../types';
 import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
+import { colors, typography, spacing, borderRadius } from '../theme';
 
-// Tuodaan screenejä
 import HomeScreen from '../screens/HomeScreen';
 import PlaydateDetailScreen from '../screens/PlaydateDetailScreen';
 import CreatePlaydateScreen from '../screens/CreatePlaydateScreen';
@@ -18,9 +18,20 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
+const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
+  <View style={[styles.tabIconContainer, focused && styles.tabIconContainerActive]}>
+    <Text style={[styles.tabIcon, focused && styles.tabIconActive]}>{icon}</Text>
+  </View>
+);
+
 const AuthNavigator = () => {
   return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+    <AuthStack.Navigator 
+      screenOptions={{ 
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.backgroundWarm },
+      }}
+    >
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
     </AuthStack.Navigator>
@@ -31,17 +42,14 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#dc2626',
-        tabBarInactiveTintColor: '#6b7280',
-        tabBarStyle: {
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarItemStyle: styles.tabBarItem,
+        headerStyle: styles.header,
+        headerTitleStyle: styles.headerTitle,
+        headerShadowVisible: false,
       }}
     >
       <Tab.Screen
@@ -49,21 +57,17 @@ const TabNavigator = () => {
         component={HomeScreen}
         options={{
           title: 'Koti',
-          headerTitle: 'Päivän leikkitreffit',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>🏠</Text>
-          ),
+          headerTitle: 'Leikille',
+          tabBarIcon: ({ focused }) => <TabIcon icon="◉" focused={focused} />,
         }}
       />
       <Tab.Screen
         name="CreatePlaydate"
         component={CreatePlaydateScreen}
         options={{
-          title: 'Uusi leikki',
-          headerTitle: 'Luo leikkitreffi',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>➕</Text>
-          ),
+          title: 'Uusi',
+          headerTitle: 'Luo leikki',
+          tabBarIcon: ({ focused }) => <TabIcon icon="+" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -71,10 +75,8 @@ const TabNavigator = () => {
         component={ProfileScreen}
         options={{
           title: 'Profiili',
-          headerTitle: 'Oma profiili',
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>👤</Text>
-          ),
+          headerShown: false,
+          tabBarIcon: ({ focused }) => <TabIcon icon="●" focused={focused} />,
         }}
       />
     </Tab.Navigator>
@@ -83,7 +85,14 @@ const TabNavigator = () => {
 
 const MainNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: styles.header,
+        headerTitleStyle: styles.headerTitle,
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+      }}
+    >
       <Stack.Screen
         name="MainTabs"
         component={TabNavigator}
@@ -92,7 +101,11 @@ const MainNavigator = () => {
       <Stack.Screen 
         name="PlaydateDetail" 
         component={PlaydateDetailScreen}
-        options={{ title: 'Leikki' }}
+        options={{ 
+          title: 'Leikki',
+          headerTransparent: true,
+          headerTintColor: colors.text,
+        }}
       />
     </Stack.Navigator>
   );
@@ -104,7 +117,7 @@ export const AppNavigator = () => {
   if (loading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -121,5 +134,51 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  tabBar: {
+    backgroundColor: colors.surface,
+    borderTopWidth: 0,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+    height: 70,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  tabBarLabel: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.medium,
+    marginTop: spacing.xs,
+  },
+  tabBarItem: {
+    paddingTop: spacing.xs,
+  },
+  tabIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabIconContainerActive: {
+    backgroundColor: colors.primaryLight,
+  },
+  tabIcon: {
+    fontSize: 18,
+    color: colors.textMuted,
+  },
+  tabIconActive: {
+    color: colors.primary,
+  },
+  header: {
+    backgroundColor: colors.background,
+  },
+  headerTitle: {
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.lg,
+    color: colors.text,
   },
 });
