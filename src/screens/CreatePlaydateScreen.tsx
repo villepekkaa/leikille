@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity, Platform, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, Alert, TouchableOpacity, Platform, StyleSheet, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
+import * as ExpoLocation from 'expo-location';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { TabParamList, Location } from '../types';
@@ -11,6 +12,37 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, spacing, borderRadius, typography, shadows } from '../theme';
 
 type Props = NativeStackScreenProps<TabParamList, 'CreatePlaydate'>;
+
+const geocodingService = {
+  async forwardGeocode(query: string): Promise<{ latitude: number; longitude: number } | null> {
+    try {
+      const results = await ExpoLocation.geocodeAsync(query);
+      if (results.length > 0) {
+        return results[0];
+      }
+      return null;
+    } catch (error) {
+      console.error('Forward geocoding error:', error);
+      return null;
+    }
+  },
+
+  async reverseGeocode(latitude: number, longitude: number): Promise<{ name: string; address: string } | null> {
+    try {
+      const results = await ExpoLocation.reverseGeocodeAsync({ latitude, longitude });
+      if (results.length > 0) {
+        const place = results[0];
+        const name = place.name || place.street || 'Tuntematon paikka';
+        const address = [place.street, place.city, place.region].filter(Boolean).join(', ') || 'Tuntematon osoite';
+        return { name, address };
+      }
+      return null;
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return null;
+    }
+  },
+};
 
 const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
@@ -26,6 +58,8 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
   const [maxAge, setMaxAge] = useState('5');
   const [maxParticipants, setMaxParticipants] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const geocodeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [region, setRegion] = useState<Region>({
     latitude: 60.1699,
@@ -39,10 +73,69 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
     longitude: 24.9384,
   });
 
-  const handleMapPress = (e: any) => {
+  useEffect(() => {
+    return () => {
+      if (geocodeTimerRef.current) {
+        clearTimeout(geocodeTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleLocationInputChange = useCallback(
+    async (value: string, type: 'name' | 'address') => {
+      if (type === 'name') {
+        setLocationName(value);
+      } else {
+        setLocationAddress(value);
+      }
+
+      if (geocodeTimerRef.current) {
+        clearTimeout(geocodeTimerRef.current);
+      }
+
+      if (value.length < 3) return;
+
+      geocodeTimerRef.current = setTimeout(async () => {
+        setIsGeocoding(true);
+        const query = type === 'name' && locationAddress
+          ? `${value}, ${locationAddress}`
+          : type === 'address' && locationName
+            ? `${locationName}, ${value}`
+            : value;
+
+        const result = await geocodingService.forwardGeocode(query);
+
+        if (result) {
+          setRegion({
+            latitude: result.latitude,
+            longitude: result.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+          setMarkerCoordinate(result);
+        }
+        setIsGeocoding(false);
+      }, 1000);
+    },
+    [locationName, locationAddress]
+  );
+
+  const handleMapPress = useCallback(async (e: any) => {
     const coordinate = e.nativeEvent.coordinate;
     setMarkerCoordinate(coordinate);
-  };
+    setIsGeocoding(true);
+    
+    const result = await geocodingService.reverseGeocode(
+      coordinate.latitude,
+      coordinate.longitude
+    );
+
+    if (result) {
+      setLocationName(result.name);
+      setLocationAddress(result.address);
+    }
+    setIsGeocoding(false);
+  }, []);
 
   const handleCreatePlaydate = async () => {
     if (!title || !locationName || !locationAddress) {
@@ -243,20 +336,21 @@ const CreatePlaydateScreen: React.FC<Props> = ({ navigation }) => {
               <Input
                 label="Paikan nimi"
                 value={locationName}
-                onChangeText={setLocationName}
+                onChangeText={(text) => handleLocationInputChange(text, 'name')}
                 placeholder="esim. Töölön leikkipuisto"
               />
 
               <Input
                 label="Osoite"
                 value={locationAddress}
-                onChangeText={setLocationAddress}
+                onChangeText={(text) => handleLocationInputChange(text, 'address')}
                 placeholder="esim. Töölönkatu 12, Helsinki"
               />
 
               <Text style={styles.mapLabel}>
                 Napauta karttaa valitaksesi tarkka sijainti
               </Text>
+              {isGeocoding && <ActivityIndicator style={styles.geocodingIndicator} color={colors.primary} />}
               <View style={styles.mapContainer}>
                 <MapView
                   style={styles.map}
@@ -355,6 +449,12 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  geocodingIndicator: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    zIndex: 1,
   },
   submitContainer: {
     marginTop: spacing.md,
