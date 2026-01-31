@@ -286,8 +286,8 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.primary,
-    paddingTop: spacing.xxxl,
-    paddingBottom: spacing.xxxl + spacing.xl,
+    paddingTop: spacing.xxxl + spacing.lg,
+    paddingBottom: spacing.xxl,
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
   },
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.xl,
-    marginTop: -spacing.xl,
+    marginTop: spacing.sm,
   },
   section: {
     marginBottom: spacing.xl,
